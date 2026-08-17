@@ -1,0 +1,54 @@
+name: Publicar site no GitHub Pages
+
+# Dispara a cada push na main. O workflow_dispatch deixa republicar
+# manualmente pela aba Actions, sem precisar de um commit novo.
+on:
+  push:
+    branches: [main]
+    # Só republica quando algo que vai pro ar muda.
+    # Editar README ou os .md de briefing não gasta uma execução.
+    paths:
+      - "site/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+# Permissões mínimas para o deploy oficial de Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Um deploy por vez. cancel-in-progress fica false de propósito:
+# cancelar um deploy pela metade pode deixar a página inconsistente.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar o GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Tenta ligar o Pages sozinho na primeira execução.
+          enablement: true
+
+      # O site é estático: não há build, nem npm, nem dependências.
+      # Sobe só a pasta site/, que é o que de fato vai pro ar —
+      # img/ da raiz e claude-frontend-skills/ ficam de fora.
+      - name: Empacotar a pasta site/
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+      - name: Publicar
+        id: deploy
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,11 @@
+# Guarda tudo com LF no repositório. O Windows continua trabalhando com
+# CRLF localmente, e o runner Linux do Actions recebe LF — sem diffs falsos.
+* text=auto eol=lf
+
+# Binários: nunca converter
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.woff2 binary
+*.ico binary
