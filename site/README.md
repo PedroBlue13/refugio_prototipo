@@ -22,15 +22,56 @@ E acesse `http://localhost:8000`.
 
 ## Como publicar
 
-Arraste a pasta `site/` inteira para o serviço de hospedagem. Não há etapa de build.
+### GitHub Pages (já configurado)
+
+O repositório é [PedroBlue13/refugio_prototipo](https://github.com/PedroBlue13/refugio_prototipo).
+
+> **Passo obrigatório, uma única vez:** em
+> **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**.
+>
+> Sem isso o workflow falha logo no começo, no passo "Preparar o GitHub Pages". O `GITHUB_TOKEN`
+> do Actions não tem permissão para criar o site do Pages sozinho — só para publicar num site que
+> já existe. É clicar uma vez e nunca mais pensar nisso.
+
+Feito isso, **todo push na `main` publica sozinho** — não há etapa de build.
+
+```bash
+git add .
+git commit -m "descrição da mudança"
+git push
+```
+
+Em cerca de um minuto o site atualiza em
+`https://pedroblue13.github.io/refugio_prototipo/`.
+
+O workflow está em [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) e publica
+**apenas a pasta `site/`** — `img/` da raiz (originais pesados) e `claude-frontend-skills/` ficam de
+fora do que vai pro ar. Ele só roda quando algo dentro de `site/` muda, então editar os `.md` de
+briefing não gasta execução. Dá para republicar à mão em **Actions → Publicar site no GitHub Pages →
+Run workflow**.
+
+
+### Outras hospedagens
+
+Arraste a pasta `site/` inteira. Não há build.
 
 - **Netlify** — arraste a pasta em app.netlify.com/drop
 - **Vercel** — `vercel deploy` na pasta, ou arraste pelo painel
-- **GitHub Pages** — suba o conteúdo na branch `gh-pages`
-- **Hospedagem tradicional (cPanel, Hostinger…)** — envie tudo por FTP para `public_html`
+- **Hospedagem tradicional (cPanel, Hostinger…)** — envie por FTP para `public_html`
 
-Depois de publicar, troque o endereço provisório `https://refugiobarber.com.br/` pelo domínio real em
-`index.html`: nas tags `<link rel="canonical">`, `og:url` e no campo `url` dos dados estruturados.
+### Ao migrar para o domínio definitivo
+
+Troque o endereço provisório `https://refugiobarber.com.br/` em `index.html`: nas tags
+`<link rel="canonical">`, `og:url` e no campo `url` dos dados estruturados.
+
+> ⚠️ **Enquanto estiver no GitHub Pages**, o `canonical` aponta para `refugiobarber.com.br`, um
+> domínio que ainda não existe. Para um protótipo isso é até conveniente — evita que a versão de
+> teste seja indexada no lugar do site final. Mas se você quiser que o endereço do Pages apareça no
+> Google, precisa trocar o `canonical` para a URL do Pages.
+>
+> A `og:image` também usa caminho relativo (`img/og.jpg`). WhatsApp, Instagram e afins exigem URL
+> **absoluta** para exibir a prévia — quando o domínio estiver definido, troque para o endereço
+> completo (`https://seudominio.com.br/img/og.jpg`).
 
 ---
 
