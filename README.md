@@ -24,10 +24,11 @@ E acesse `http://localhost:8000`.
 
 ### GitHub Pages (já configurado)
 
-O repositório é [PedroBlue13/refugio_prototipo](https://github.com/PedroBlue13/refugio_prototipo),
-publicando com **Settings → Pages → Source: Deploy from a branch → `main` → `/ (root)`**.
+O repositório é [PedroBlue13/refugio_prototipo](https://github.com/PedroBlue13/refugio_prototipo).
 
-**Todo push na `main` publica sozinho** — o próprio GitHub cuida disso, sem workflow nenhum:
+**Configuração atual:** Settings → Pages → Source: **GitHub Actions**, rodando
+[`.github/workflows/static.yml`](.github/workflows/static.yml) — o template "Static HTML" padrão do
+GitHub. **Todo push na `main` publica sozinho:**
 
 ```bash
 git add .
@@ -38,16 +39,21 @@ git push
 Em cerca de um minuto o site atualiza em
 `https://pedroblue13.github.io/refugio_prototipo/`.
 
-> **Por que o site mora na raiz do repositório.** Nesse modo o GitHub serve a pasta escolhida
-> exatamente como ela está. Com `/ (root)` selecionado, `index.html` precisa estar na raiz — por
-> isso não existe mais uma pasta `site/`. Os arquivos-fonte pesados (fotos originais) ficam em
-> `originais/`, que não é usada pelo site.
+> **Por que o site mora na raiz do repositório.** O workflow sobe `path: '.'`, ou seja, o
+> repositório inteiro — então o `index.html` precisa estar na raiz. É por isso que não existe mais
+> uma pasta `site/`. Como bônus, esse arranjo também funciona sem alteração nenhuma se um dia você
+> trocar o Source para **Deploy from a branch → `main` → `/ (root)`**.
 >
-> Não existe workflow de deploy no repositório. Um workflow com `actions/deploy-pages` **só
-> funciona** quando o Source é "GitHub Actions"; com deploy por branch ele falharia a cada push.
+> Se quiser publicar só o essencial, troque `path: '.'` por `path: './publico'` no workflow e mova
+> para essa pasta apenas `index.html`, `css/`, `js/`, `fonts/`, `img/` e `.nojekyll`.
 >
-> O arquivo `.nojekyll` na raiz desliga o processamento Jekyll — o site é servido exatamente como
-> está no repositório, o que é mais rápido e evita surpresas com nomes de arquivo.
+> O `.nojekyll` na raiz desliga o processamento Jekyll — os arquivos são servidos exatamente como
+> estão, o que é mais rápido e evita surpresas com nomes de arquivo.
+
+**Só pode existir um mecanismo de publicação.** Um workflow com `actions/deploy-pages` exige
+Source "GitHub Actions"; com "Deploy from a branch" ele falha a cada push. Por isso o repositório
+tem apenas o `static.yml` — o workflow que eu havia criado antes foi removido para não competir
+com ele.
 
 ### Outras hospedagens
 
@@ -96,10 +102,10 @@ Troque o endereço provisório `https://refugiobarber.com.br/` em `index.html`: 
 └── claude-frontend-skills/
 ```
 
-Tudo que está na raiz é servido publicamente, inclusive os `.md` de briefing e `originais/`.
-O repositório já é público, então nada novo fica exposto — mas se quiser tirar esses arquivos do
-ar, o caminho é mover o site para uma pasta `docs/` e apontar o Pages para ela
-(**Settings → Pages → folder: `/docs`**).
+Como o workflow sobe a raiz inteira, tudo isso é servido publicamente — inclusive os `.md` de
+briefing, `originais/` e `claude-frontend-skills/`. O repositório já é público, então nada novo
+fica exposto, e são só alguns MB. Se quiser enxugar, veja a nota sobre `path:` em
+[Como publicar](#github-pages-já-configurado).
 
 ---
 
