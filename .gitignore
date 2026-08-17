@@ -9,7 +9,7 @@ Desktop.ini
 *.swp
 
 # Páginas temporárias de diagnóstico geradas durante testes visuais
-site/_*.html
+_*.html
 
 # Caso o projeto ganhe build no futuro
 node_modules/

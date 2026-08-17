@@ -24,16 +24,10 @@ E acesse `http://localhost:8000`.
 
 ### GitHub Pages (já configurado)
 
-O repositório é [PedroBlue13/refugio_prototipo](https://github.com/PedroBlue13/refugio_prototipo).
+O repositório é [PedroBlue13/refugio_prototipo](https://github.com/PedroBlue13/refugio_prototipo),
+publicando com **Settings → Pages → Source: Deploy from a branch → `main` → `/ (root)`**.
 
-> **Passo obrigatório, uma única vez:** em
-> **Settings → Pages → Build and deployment → Source**, escolha **GitHub Actions**.
->
-> Sem isso o workflow falha logo no começo, no passo "Preparar o GitHub Pages". O `GITHUB_TOKEN`
-> do Actions não tem permissão para criar o site do Pages sozinho — só para publicar num site que
-> já existe. É clicar uma vez e nunca mais pensar nisso.
-
-Feito isso, **todo push na `main` publica sozinho** — não há etapa de build.
+**Todo push na `main` publica sozinho** — o próprio GitHub cuida disso, sem workflow nenhum:
 
 ```bash
 git add .
@@ -44,16 +38,20 @@ git push
 Em cerca de um minuto o site atualiza em
 `https://pedroblue13.github.io/refugio_prototipo/`.
 
-O workflow está em [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) e publica
-**apenas a pasta `site/`** — `img/` da raiz (originais pesados) e `claude-frontend-skills/` ficam de
-fora do que vai pro ar. Ele só roda quando algo dentro de `site/` muda, então editar os `.md` de
-briefing não gasta execução. Dá para republicar à mão em **Actions → Publicar site no GitHub Pages →
-Run workflow**.
-
+> **Por que o site mora na raiz do repositório.** Nesse modo o GitHub serve a pasta escolhida
+> exatamente como ela está. Com `/ (root)` selecionado, `index.html` precisa estar na raiz — por
+> isso não existe mais uma pasta `site/`. Os arquivos-fonte pesados (fotos originais) ficam em
+> `originais/`, que não é usada pelo site.
+>
+> Não existe workflow de deploy no repositório. Um workflow com `actions/deploy-pages` **só
+> funciona** quando o Source é "GitHub Actions"; com deploy por branch ele falharia a cada push.
+>
+> O arquivo `.nojekyll` na raiz desliga o processamento Jekyll — o site é servido exatamente como
+> está no repositório, o que é mais rápido e evita surpresas com nomes de arquivo.
 
 ### Outras hospedagens
 
-Arraste a pasta `site/` inteira. Não há build.
+Arraste a raiz do projeto (ou só `index.html`, `css/`, `js/`, `fonts/` e `img/`). Não há build.
 
 - **Netlify** — arraste a pasta em app.netlify.com/drop
 - **Vercel** — `vercel deploy` na pasta, ou arraste pelo painel
@@ -78,42 +76,56 @@ Troque o endereço provisório `https://refugiobarber.com.br/` em `index.html`: 
 ## Estrutura
 
 ```
-site/
-├── index.html          página inteira + SEO + dados estruturados + ícones SVG
-├── css/styles.css      design system e todos os estilos
-├── js/main.js          animações de scroll, menu, FAQ, contadores
-├── fonts/              Bebas Neue, Inter e Permanent Marker (.woff2 local)
-└── img/
-    ├── ana.webp/.jpg   retrato do Hero
-    ├── logo.*          logo e favicons
-    └── galeria/g1–g9   fotos recortadas das tiras originais
+.                          ← raiz do repositório = raiz do site publicado
+├── index.html             página inteira + SEO + dados estruturados + ícones SVG
+├── .nojekyll              desliga o Jekyll: serve os arquivos como estão
+├── css/styles.css         design system e todos os estilos
+├── js/main.js             animações de scroll, menu, FAQ, contadores
+├── fonts/                 Bebas Neue, Inter e Permanent Marker (.woff2 local)
+├── img/                   o que o site realmente usa
+│   ├── ana.webp/.jpg      retrato do Hero (recorte com fundo transparente)
+│   ├── og.jpg             imagem de compartilhamento, 1200×630
+│   ├── logo.* / icon-*    logo e favicons
+│   └── galeria/g1–g9      fotos recortadas das tiras originais
+│
+├── originais/             arquivos-fonte — NÃO usados pelo site
+│   ├── ana/ana.png        retrato em alta, com alfa
+│   ├── clientes/          as duas tiras de contato
+│   └── logo/
+├── refugio-barber-*.md    briefings do cliente
+└── claude-frontend-skills/
 ```
+
+Tudo que está na raiz é servido publicamente, inclusive os `.md` de briefing e `originais/`.
+O repositório já é público, então nada novo fica exposto — mas se quiser tirar esses arquivos do
+ar, o caminho é mover o site para uma pasta `docs/` e apontar o Pages para ela
+(**Settings → Pages → folder: `/docs`**).
 
 ---
 
 ## ⚠️ Trocar uma foto: leia isto primeiro
 
-**O site não lê a pasta `img/` da raiz do projeto.** Ele usa cópias próprias, já otimizadas,
-dentro de `site/img/`. Trocar o arquivo original **não muda nada** no site — é preciso gerar as
-cópias de novo.
+**O site não lê a pasta `originais/`.** Ele usa cópias próprias, já otimizadas, em `img/`.
+Trocar o arquivo original **não muda nada** no site — é preciso gerar as cópias de novo.
 
-Para o retrato do Hero, depois de substituir `img/ana/ana.png` na raiz:
+Para o retrato do Hero, depois de substituir `originais/ana/ana.png`:
 
 ```bash
 python - <<'FIM'
 from PIL import Image, ImageFilter
-im = Image.open('img/ana/ana.png').convert('RGBA')
+im = Image.open('originais/ana/ana.png').convert('RGBA')
 im = im.crop(im.getbbox())                       # corta a borda transparente
 w = 1000; h = round(im.height * w / im.width)
 im = im.resize((w, h), Image.LANCZOS)
 im = im.filter(ImageFilter.UnsharpMask(1.2, 55, 3))
-im.save('site/img/ana.webp', 'WEBP', quality=82, method=6)
+im.save('img/ana.webp', 'WEBP', quality=82, method=6)
 flat = Image.new('RGB', im.size, (5, 5, 5)); flat.paste(im, (0, 0), im)
-flat.save('site/img/ana.jpg', 'JPEG', quality=84, optimize=True, progressive=True)
+flat.save('img/ana.jpg', 'JPEG', quality=84, optimize=True, progressive=True)
 og = Image.new('RGB', (1200, 630), (5, 5, 5))
 fh = 600; fw = round(im.width * fh / im.height)
-og.paste(im.resize((fw, fh), Image.LANCZOS), (1200 - fw - 90, 30), im.resize((fw, fh), Image.LANCZOS))
-og.save('site/img/og.jpg', 'JPEG', quality=86, optimize=True)
+fig = im.resize((round(im.width * fh / im.height), fh), Image.LANCZOS)
+og.paste(fig, (1200 - fig.width - 90, 30), fig)
+og.save('img/og.jpg', 'JPEG', quality=86, optimize=True)
 FIM
 ```
 
